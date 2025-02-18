@@ -1,0 +1,17 @@
+[package]
+name = "brightness-node" # Replace with your package name
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+# Dependencies
+[dependencies]
+napi = "2.0"
+napi-derive = "2.0"
+serde_json = "1.0"
+brightness = "0.5"
+
+[package.metadata.napi]
+name = "brightness-node"

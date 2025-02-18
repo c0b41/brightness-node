@@ -1,0 +1,30 @@
+{
+  "name": "brightness-node",
+  "version": "0.1.0",
+  "description": "A Node.js N-API module to control and list display brightness on Windows.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "napi build --platform dist"
+  },
+  "napi": {
+    "name": "brightness",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-pc-windows-msvc",
+        "aarch64-pc-windows-msvc"
+      ]
+    }
+  },
+  "keywords": [
+    "napi",
+    "brightness",
+    "windows"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/your-username/your-repo#readme",
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  }
+}
