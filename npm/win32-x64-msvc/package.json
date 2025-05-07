@@ -1,0 +1,19 @@
+{
+  "name": "@c0b41/brightness-node-win32-x64-msvc",
+  "version": "1.0.2",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "brightness-node.win32-x64-msvc.node",
+  "files": [
+    "brightness-node.win32-x64-msvc.node"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/c0b41/brightness-node/tree/master/npm/win32-x64-msvc",
+  "engines": {
+    "node": ">= 10"
+  }
+}
