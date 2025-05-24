@@ -12,7 +12,7 @@ fn get_real_display_name(device_name: &str) -> Option<String> {
         let mut device = DISPLAY_DEVICEW::default();
 
         loop {
-            let null_pcwstr = PCWSTR::new(std::ptr::null_mut());
+            let null_pcwstr = PCWSTR(std::ptr::null_mut());
             let result = EnumDisplayDevicesW(null_pcwstr, device_index, &mut device, 0);
 
             if !result.as_bool() {
