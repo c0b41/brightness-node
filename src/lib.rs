@@ -3,20 +3,21 @@ use napi_derive::napi;
 use brightness::blocking::{Brightness};
 use serde_json::json;
 use windows::core::PCWSTR;
-use windows::Win32::Devices::Display::{EnumDisplayDevicesW, DISPLAY_DEVICEW};
+use windows::Win32::Graphics::Gdi::{EnumDisplayDevicesW, DISPLAY_DEVICEW};
 use windows::Win32::Foundation::ERROR_NO_MORE_ITEMS;
 
 fn get_real_display_name(device_name: &str) -> Option<String> {
-    
     unsafe {
         let mut device_index = 0;
         let mut device = DISPLAY_DEVICEW::default();
 
         loop {
-            let result = EnumDisplayDevicesW(PCWSTR::null(), device_index, &mut device, 0);
+            let null_pcwstr = PCWSTR::from_raw(std::ptr::null());
+            let result = EnumDisplayDevicesW(null_pcwstr, device_index, &mut device, 0);
+
             if !result.as_bool() {
                 let err = std::io::Error::last_os_error().raw_os_error()?;
-                if err == ERROR_NO_MORE_ITEMS as i32 {
+                if err == ERROR_NO_MORE_ITEMS.0 as i32 {
                     break None;
                 } else {
                     break None;
