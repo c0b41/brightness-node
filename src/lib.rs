@@ -12,26 +12,26 @@ fn get_real_display_name(device_name: &str) -> Option<String> {
         let mut device = DISPLAY_DEVICEW::default();
 
         loop {
-            let null_pcwstr = PCWSTR(std::ptr::null_mut());
-            let result = EnumDisplayDevicesW(null_pcwstr, device_index, &mut device, 0);
+            let result = EnumDisplayDevicesW(PCWSTR(std::ptr::null_mut()), device_index, &mut device, 0);
 
             if !result.as_bool() {
-                let err = std::io::Error::last_os_error().raw_os_error()?;
-                if err == ERROR_NO_MORE_ITEMS.0 as i32 {
-                    break None;
-                } else {
-                    break None;
-                }
+                break None; // No more devices — not found
             }
 
-            // Convert DeviceName and DeviceString from UTF-16
+            // Convert UTF-16 names to Rust strings
             let dev_name = String::from_utf16_lossy(&device.DeviceName);
-            let dev_string = String::from_utf16_lossy(&device.DeviceString);
+            let dev_string = String::from_utf16_lossy(&device.DeviceString)
+                .trim_matches(char::from(0))
+                .to_string();
 
-            // Match based on device name
-            if dev_name.contains(device_name) || device_name.contains(&dev_name) {
-                let friendly_name = dev_string.trim_matches(char::from(0)).to_string();
-                break Some(friendly_name);
+            // Match based on display index like "DISPLAY1", "DISPLAY2", etc.
+            if dev_name.contains("DISPLAY") && device_name.contains(&dev_name.replace("\\\\.\\", "")) {
+                // Only return Some if dev_string is a real friendly name
+                if !dev_string.is_empty() {
+                    break Some(dev_string)
+                } else {
+                    break None // Don't return anything if only empty name found
+                }
             }
 
             device_index += 1;
