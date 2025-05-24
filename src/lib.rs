@@ -2,16 +2,56 @@ use napi::{bindgen_prelude::*, Result};
 use napi_derive::napi;
 use brightness::blocking::{Brightness};
 use serde_json::json;
+use windows::core::PCWSTR;
+use windows::Win32::Devices::Display::{EnumDisplayDevicesW, DISPLAY_DEVICEW};
+use windows::Win32::Foundation::ERROR_NO_MORE_ITEMS;
+
+fn get_real_display_name(device_name: &str) -> Option<String> {
+    
+    unsafe {
+        let mut device_index = 0;
+        let mut device = DISPLAY_DEVICEW::default();
+
+        loop {
+            let result = EnumDisplayDevicesW(PCWSTR::null(), device_index, &mut device, 0);
+            if !result.as_bool() {
+                let err = std::io::Error::last_os_error().raw_os_error()?;
+                if err == ERROR_NO_MORE_ITEMS as i32 {
+                    break None;
+                } else {
+                    break None;
+                }
+            }
+
+            // Convert DeviceName and DeviceString from UTF-16
+            let dev_name = String::from_utf16_lossy(&device.DeviceName);
+            let dev_string = String::from_utf16_lossy(&device.DeviceString);
+
+            // Match based on device name
+            if dev_name.contains(device_name) || device_name.contains(&dev_name) {
+                let friendly_name = dev_string.trim_matches(char::from(0)).to_string();
+                break Some(friendly_name);
+            }
+
+            device_index += 1;
+        }
+    }
+}
 
 #[napi]
 pub fn list_devices() -> Result<String> {
     let devices_info = brightness::blocking::brightness_devices()
         .filter_map(|dev_result| dev_result.map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok())
         .map(|dev| {
-            let device_name = dev.device_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string()).replace('\\', "/");
+            let raw_device_name = dev.device_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string());
+            let normalized_name = raw_device_name.replace('\\', "/");
+            let real_friendly_name = get_real_display_name(&raw_device_name);
+
             let device_brightness = dev.get().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok();
+
             json!({
-                "device_name": device_name,
+                "device_name": normalized_name,
+                "friendly_name": real_friendly_name,
                 "current_brightness": device_brightness
             })
         })
