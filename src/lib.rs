@@ -8,10 +8,15 @@ pub fn list_devices() -> Result<String> {
     let devices_info = brightness::blocking::brightness_devices()
         .filter_map(|dev_result| dev_result.map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok())
         .map(|dev| {
-            let device_name = dev.device_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string()).replace('\\', "/");
+            let raw_device_name = dev.device_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string());
+            
+            let normalized_name = raw_device_name.replace('\\', "/");
+            let real_friendly_name = dev.display_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| Some("Unknown Device".to_string()));
             let device_brightness = dev.get().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok();
+
             json!({
-                "device_name": device_name,
+                "device_name": normalized_name,
+                "friendly_name": real_friendly_name,
                 "current_brightness": device_brightness
             })
         })
