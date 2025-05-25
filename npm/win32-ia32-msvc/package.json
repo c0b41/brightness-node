@@ -1,6 +1,6 @@
 {
   "name": "@c0b41/brightness-node-win32-ia32-msvc",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "os": [
     "win32"
   ],
