@@ -45,9 +45,9 @@ pub fn list_devices() -> Result<String> {
         .filter_map(|dev_result| dev_result.map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok())
         .map(|dev| {
             let raw_device_name = dev.device_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string());
+            
             let normalized_name = raw_device_name.replace('\\', "/");
-            let real_friendly_name = get_real_display_name(&raw_device_name);
-
+            let real_friendly_name = dev.display_name().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).unwrap_or_else(|_| "Unknown Device".to_string());
             let device_brightness = dev.get().map_err(|e| Error::new(Status::GenericFailure, format!("{}", e))).ok();
 
             json!({
